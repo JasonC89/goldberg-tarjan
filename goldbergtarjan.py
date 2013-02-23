@@ -23,7 +23,7 @@ def max_flow(c, start, end):
     param end: The end node, this has to be a node with only outgoing
     edges."""
     nodes = {}
-    f = Sparse({}) # current flow on the graph, keys will be tuples with nodes
+    f = Sparse({})  # current flow on the graph, keys will be tuples with nodes
     c = Sparse(c)
 
     for fro, to in c:
@@ -38,7 +38,7 @@ def max_flow(c, start, end):
         nodes[to]['neighbors'].append(fro)
 
     if not start in nodes or not end in nodes:
-        print "Start or end node does not exist"
+        print("Start or end node does not exist")
         return False
 
     active_nodes = set([])
@@ -52,7 +52,7 @@ def max_flow(c, start, end):
         nodes[node]['overflow'] = c[(start, node)]
 
         active_nodes.add(node)
-    
+
     while len(active_nodes) > 0:
         node = active_nodes.pop()
 
@@ -65,73 +65,63 @@ def max_flow(c, start, end):
         if node != start and node != end and nodes[node]['overflow'] > 0:
             active_nodes.add(node)
         for neighbor in nodes[node]['neighbors']:
-            if neighbor != start and neighbor != end and nodes[neighbor]['overflow'] > 0:
+            if neighbor != start and neighbor != end and \
+                    nodes[neighbor]['overflow'] > 0:
                 active_nodes.add(neighbor)
-        print active_nodes
-    
+        print(active_nodes)
+
     # Calculate the amount of flow
     sum = 0
     for neighbor in nodes[start]['neighbors']:
         sum += f[(start, neighbor)]
         sum -= f[(neighbor, start)]
 
-    sum = sum/2 # take the half because we also counted all backward edges
+    sum = sum / 2  # take the half because we also counted all backward edges
 
     return sum, f
+
 
 def can_push(node, nodes, f, c):
     """To be able to push we need capacity on the edge and the height
     of the neighbor must be exactly one smaller than current node is"""
-    dist = nodes[node]['dist']
-
     for neighbor in nodes[node]['neighbors']:
-        if nodes[neighbor]['dist'] + 1 == nodes[node]['dist'] and c[(node, neighbor)] - f[(node, neighbor)] > 0:
+        if nodes[neighbor]['dist'] + 1 == nodes[node]['dist'] and \
+                c[(node, neighbor)] - f[(node, neighbor)] > 0:
             return True
-    
+
     return False
 
+
 def relabel(node, nodes, f, c):
-    print node
-    print c[(2, 1)]
-    print c[(1, 0)]
-    print f[(2, 1)]
-    print f[(1, 0)]
-    nodes[node]['dist'] = 1 + min([nodes[neighbor]['dist']
-                              for neighbor in nodes[node]['neighbors']
-                              if c[(node, neighbor)] - f[(node, neighbor)] > 0])
+    print()
+    print("Relabeling %s" % node)
+    nodes[node]['dist'] = 1 + \
+        min([nodes[neighbor]['dist']
+             for neighbor in nodes[node]['neighbors']
+             if c[(node, neighbor)] - f[(node, neighbor)] > 0])
 
     return nodes
 
+
 def push(node, nodes, f, c):
+    print()
+    print("Pushing on node %s (dist: %s)" % (node, nodes[node]['dist']))
     for neighbor in nodes[node]['neighbors']:
+        print("neighbor %s (dist: %s)" % (neighbor, nodes[neighbor]['dist']))
         if nodes[neighbor]['dist'] + 1 == nodes[node]['dist']:
-            print "pushing from %d to %d" % (node, neighbor)
+            print("pushing from %d to %d" % (node, neighbor))
 
             empty_capacity = c[(node, neighbor)] - f[(node, neighbor)]
             push_amount = min((empty_capacity, nodes[node]['overflow']))
-            
-            print "current overflow %d" % nodes[node]['overflow']
-            print "Amount %d" % push_amount
+
+            print("current overflow %d" % nodes[node]['overflow'])
+            print("Amount %d" % push_amount)
 
             nodes[neighbor]['overflow'] += push_amount
             nodes[node]['overflow'] -= push_amount
             f[(node, neighbor)] += push_amount
             f[(neighbor, node)] -= push_amount
 
-            print "new overflow %d" % nodes[node]['overflow']
-    
+            print("new overflow %d" % nodes[node]['overflow'])
+
     return nodes, f, c
-
-
-c = {(0,1): 3, (0,2): 15, (1,3): 8, (3,2): 9, (3,4): 8, (2,4): 11,
-        (4,5): 3, (5,6): 7, (3,6): 10}
-sum, res = max_flow(c, 0, 6)
-
-print "max flow: %s" % sum
-
-for edge in res:
-    if edge in c:
-        print edge
-        print "Capacity: %s" % c[edge]
-        print "Flow: %s" % res[edge]
-
