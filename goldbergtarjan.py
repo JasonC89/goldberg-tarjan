@@ -68,7 +68,6 @@ def max_flow(c, start, end):
             if neighbor != start and neighbor != end and \
                     nodes[neighbor]['overflow'] > 0:
                 active_nodes.add(neighbor)
-        print(active_nodes)
 
     # Calculate the amount of flow
     sum = 0
@@ -93,35 +92,35 @@ def can_push(node, nodes, f, c):
 
 
 def relabel(node, nodes, f, c):
-    print()
-    print("Relabeling %s" % node)
+    print("== Relabeling %s ==" % node)
+    print("Current dist: %d" % nodes[node]['dist'])
+
     nodes[node]['dist'] = 1 + \
         min([nodes[neighbor]['dist']
              for neighbor in nodes[node]['neighbors']
              if c[(node, neighbor)] - f[(node, neighbor)] > 0])
 
+    print("New dist: %d" % nodes[node]['dist'])
+
     return nodes
 
 
 def push(node, nodes, f, c):
-    print()
-    print("Pushing on node %s (dist: %s)" % (node, nodes[node]['dist']))
+    print("== Pushing from node %s (dist: %d) ==" %
+          (node, nodes[node]['dist']))
+
     for neighbor in nodes[node]['neighbors']:
-        print("neighbor %s (dist: %s)" % (neighbor, nodes[neighbor]['dist']))
         if nodes[neighbor]['dist'] + 1 == nodes[node]['dist']:
-            print("pushing from %d to %d" % (node, neighbor))
+            print("Pushing to %s" % (neighbor))
 
             empty_capacity = c[(node, neighbor)] - f[(node, neighbor)]
             push_amount = min((empty_capacity, nodes[node]['overflow']))
 
-            print("current overflow %d" % nodes[node]['overflow'])
             print("Amount %d" % push_amount)
 
             nodes[neighbor]['overflow'] += push_amount
             nodes[node]['overflow'] -= push_amount
             f[(node, neighbor)] += push_amount
             f[(neighbor, node)] -= push_amount
-
-            print("new overflow %d" % nodes[node]['overflow'])
 
     return nodes, f, c
