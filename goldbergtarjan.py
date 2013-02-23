@@ -12,7 +12,7 @@ class Sparse(object):
         self._dict[item] = val
 
     def __iter__(self):
-        return self._dict.iterkeys()
+        return iter(self._dict)
 
 
 def max_flow(c, start, end):
